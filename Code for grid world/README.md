@@ -12,6 +12,17 @@ You are welcome to provide any feedback about the code such as bugs if detected.
 
 ----
 
+## PySide6 Editor
+
+An independent Chinese-language grid-world editor is available in the repository-root [src](../src/README.md) workspace, with per-cell rewards and policies, JSON save/load, and result display interfaces. Requires Python >= 3.10 and PySide6. Install and start it from the repository root:
+
+```bash
+python3 -m pip install -r "src/requirements.txt"
+python3 -B "src/main.py"
+```
+
+The Bellman policy-evaluation button computes finite-step state values using the selected step count. Optimal policy and path algorithms remain for users to implement. See the editor README for its model conventions and calculation contracts.
+
 ## Python Version
 
 ### Requirements
