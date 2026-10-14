@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 import math
 import os
+import random
 import tempfile
 from dataclasses import dataclass, field
 from typing import Any
-
 
 ACTIONS = ("up", "down", "left", "right", "stay")
 ACTION_DELTAS = {
@@ -250,6 +250,32 @@ class GridConfig:
             for cell in row:
                 cell.probabilities = list(copied)
 
+    def randomize_forbidden(self, count: int) -> list[tuple[int, int]]:
+        """Replace forbidden cells with count distinct random non-role cells."""
+        self.validate()
+        maximum = self.rows * self.columns - 2
+        if not _is_integer(count) or not 0 <= count <= maximum:
+            raise ValueError(f"禁止格数量必须是 0 到 {maximum} 之间的整数。")
+
+        candidates = [
+            (row_index, column_index)
+            for row_index, row in enumerate(self.cells)
+            for column_index, cell in enumerate(row)
+            if cell.kind in ("normal", "forbidden")
+        ]
+        positions = random.sample(candidates, count)
+
+        for row in self.cells:
+            for cell in row:
+                if cell.kind == "forbidden":
+                    cell.kind = "normal"
+                    cell.reward = DEFAULT_REWARDS["normal"]
+        for row_index, column_index in positions:
+            cell = self.cells[row_index][column_index]
+            cell.kind = "forbidden"
+            cell.reward = DEFAULT_REWARDS["forbidden"]
+        return positions
+
     def transition(
         self, row: int, column: int, action: str
     ) -> tuple[tuple[int, int], float]:
@@ -345,9 +371,7 @@ def _require_mapping(value: object, name: str) -> dict[str, Any]:
     return value
 
 
-def _require_exact_keys(
-    value: dict[str, Any], expected: set[str], name: str
-) -> None:
+def _require_exact_keys(value: dict[str, Any], expected: set[str], name: str) -> None:
     if set(value) != expected:
         raise ValueError(f"{name} has non-canonical keys.")
 
@@ -481,9 +505,10 @@ class CalculationResult:
                     )
 
         if self.optimal_policy is not None:
-            if not isinstance(self.optimal_policy, list) or len(
-                self.optimal_policy
-            ) != config.rows:
+            if (
+                not isinstance(self.optimal_policy, list)
+                or len(self.optimal_policy) != config.rows
+            ):
                 raise ValueError("optimal_policy does not match the grid rows.")
             for row_index, row in enumerate(self.optimal_policy):
                 if not isinstance(row, list) or len(row) != config.columns:
@@ -534,9 +559,7 @@ class CalculationResult:
                 raise ValueError(
                     f"best_paths[{path_index}] must end at the target cell."
                 )
-            for previous, current in zip(
-                path.coordinates, path.coordinates[1:]
-            ):
+            for previous, current in zip(path.coordinates, path.coordinates[1:]):
                 delta = (current[0] - previous[0], current[1] - previous[1])
                 if delta not in ACTION_DELTAS.values():
                     raise ValueError(

@@ -526,6 +526,18 @@ class MainWindow(QMainWindow):
         self.apply_grid_button = QPushButton("应用棋盘设置")
         self.apply_grid_button.clicked.connect(self._apply_grid)
         grid_layout.addWidget(self.apply_grid_button)
+        forbidden_form = QFormLayout()
+        self.forbidden_count_box = QSpinBox()
+        self.forbidden_count_box.setKeyboardTracking(False)
+        forbidden_form.addRow("禁止格数量", self.forbidden_count_box)
+        grid_layout.addLayout(forbidden_form)
+        forbidden_hint = QLabel("重新生成共 n 个：避开开始和目标；0 可清除。")
+        forbidden_hint.setWordWrap(True)
+        grid_layout.addWidget(forbidden_hint)
+        self.randomize_forbidden_button = QPushButton("随机生成禁止格")
+        self.randomize_forbidden_button.setToolTip("原有禁止格恢复普通格、得分 0；随机选中格设为禁止格、得分 -1；保留各格动作概率。")
+        self.randomize_forbidden_button.clicked.connect(self._randomize_forbidden)
+        grid_layout.addWidget(self.randomize_forbidden_button)
         content_layout.addWidget(grid_group)
 
         cell_group = QGroupBox("选中方块")
@@ -593,9 +605,11 @@ class MainWindow(QMainWindow):
         result_layout.addWidget(self.evaluate_button)
         result_layout.addWidget(self.optimize_button)
         self.result_label = QLabel("尚未计算")
+        self.start_value_label = QLabel("起点状态价值 V：尚未计算")
         self.value_label = QLabel("选中格状态价值 V：尚未计算")
         self.paths_label = QLabel("最高得分路径：尚未计算")
-        for label in (self.result_label, self.value_label, self.paths_label):
+        self.paths_label.setToolTip("在显示策略允许的、不重复经过方块的目标路径中比较得分；回报只累计到首次到达目标。")
+        for label in (self.result_label, self.start_value_label, self.value_label, self.paths_label):
             label.setWordWrap(True)
             result_layout.addWidget(label)
         self.show_paths_box = QCheckBox("显示绿色路径")
@@ -636,6 +650,8 @@ class MainWindow(QMainWindow):
                               (self.config.rows, self.config.columns, self.config.cell_width_mm, self.config.cell_height_mm, self.config.gamma)):
             box.setValue(value)
         self.zoom_box.setValue(self.config.zoom * 100)
+        self.forbidden_count_box.setRange(0, self.config.rows * self.config.columns - 2)
+        self.forbidden_count_box.setValue(sum(cell.kind == "forbidden" for row in self.config.cells for cell in row))
         self._grid_baseline = self._grid_snapshot()
         self._loading = previous
 
@@ -801,6 +817,28 @@ class MainWindow(QMainWindow):
         self._editor_changed()
         self.statusBar().showMessage("五项概率已应用到全部方块。", 5000)
 
+    def _randomize_forbidden(self) -> bool:
+        if self._grid_pending():
+            self._message("棋盘参数尚未应用", "请先点击“应用棋盘设置”，再随机生成禁止格。")
+            return False
+        if not self._resolve_cell_edits():
+            return False
+
+        count = self.forbidden_count_box.value()
+        try:
+            self.config.randomize_forbidden(count)
+        except ValueError as error:
+            self._message("禁止格未生成", str(error), True)
+            return False
+        self.dirty = True
+        self._clear_result()
+        self._load_cell_editor()
+        self.board_view.board_item.update()
+        self._editor_changed()
+        message = f"已随机生成共 {count} 个禁止格。" if count else "已清除全部禁止格。"
+        self.statusBar().showMessage(message, 5000)
+        return True
+
     def _apply_grid(self) -> bool:
         values = self._grid_snapshot()
         old = (self.config.rows, self.config.columns, self.config.cell_width_mm, self.config.cell_height_mm, self.config.gamma)
@@ -944,18 +982,21 @@ class MainWindow(QMainWindow):
     def _update_result_labels(self) -> None:
         if self.result is None:
             self.result_label.setText("公式尚未接入" if self.result_label.text() == "公式尚未接入" else "尚未计算")
+            self.start_value_label.setText("起点状态价值 V：尚未计算")
             self.value_label.setText("选中格状态价值 V：尚未计算")
             self.paths_label.setText("最高得分路径：尚未计算")
             return
         row, column = self.selected
+        start_row, start_column = self.config.start
+        self.start_value_label.setText(f"起点状态价值 V：{self.result.values[start_row][start_column]:.12g}")
         self.value_label.setText(f"选中格状态价值 V：{self.result.values[row][column]:.12g}")
         paths = self.result.best_paths
         if not paths:
-            self.paths_label.setText("最高得分路径：没有返回可展示的路径")
+            self.paths_label.setText("最高得分路径：当前策略下没有可展示的目标路径")
         else:
             scores = [path.score for path in paths]
             score_text = f"{min(scores):.9g}" if min(scores) == max(scores) else f"{min(scores):.9g} ～ {max(scores):.9g}"
-            self.paths_label.setText(f"最高得分路径：{len(paths)} 条\n路径得分：{score_text}")
+            self.paths_label.setText(f"最高得分路径：{len(paths)} 条\n到达目标前回报：{score_text}")
 
     def show_result(self, result: CalculationResult, optimal: bool = False) -> None:
         if not isinstance(result, CalculationResult):
@@ -984,7 +1025,9 @@ class MainWindow(QMainWindow):
             max_count = self.max_count_box.value()
             result = function(deepcopy(self.config), max_count)
             self.show_result(result, optimal)
-            if not optimal:
+            if optimal:
+                self.result_label.setText(f"已计算未来 {max_count} 步的最优价值与策略")
+            else:
                 self.result_label.setText(f"已计算当前策略未来 {max_count} 步的状态价值")
         except NotImplementedError:
             self.result_label.setText("公式尚未接入")

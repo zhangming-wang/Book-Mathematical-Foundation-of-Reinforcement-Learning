@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from bellman import evaluate_policy
+from bellman import evaluate_policy, solve_optimal_policy
 from model import GridConfig
 
 
@@ -55,6 +55,63 @@ class PolicyEvaluationTest(unittest.TestCase):
         config.cells[0][0].probabilities = [0.0] * 5
         with self.assertRaises(ValueError):
             evaluate_policy(config, 3)
+
+
+class OptimalPolicyTest(unittest.TestCase):
+    def test_tied_actions_and_paths_show_distinct_values_and_path_returns(self) -> None:
+        config = GridConfig.create(rows=2, columns=2, gamma=0.9)
+        before = copy.deepcopy(config)
+        result = solve_optimal_policy(config, 3)
+        result.validate(config)
+        self.assertAlmostEqual(result.values[0][0], 1.71)
+        self.assertAlmostEqual(result.values[1][1], 2.71)
+        self.assertEqual(result.optimal_policy[0][0], [0.0, 0.5, 0.0, 0.5, 0.0])
+        self.assertEqual(result.optimal_policy[1][1], [0.0, 1 / 3, 0.0, 1 / 3, 1 / 3])
+        self.assertEqual(
+            {tuple(path.coordinates) for path in result.best_paths},
+            {((0, 0), (0, 1), (1, 1)), ((0, 0), (1, 0), (1, 1))},
+        )
+        for path in result.best_paths:
+            self.assertAlmostEqual(path.score, 0.9)
+        self.assertEqual(config, before)
+
+    def test_missing_goal_paths_still_return_values_and_policy(self) -> None:
+        config = GridConfig.create(rows=1, columns=3)
+        result = solve_optimal_policy(config, 1)
+        result.validate(config)
+        self.assertEqual(result.best_paths, [])
+        self.assertEqual(result.values, [[0.0, 1.0, 1.0]])
+
+        config.apply_policy_to_all([0.0, 0.0, 0.0, 0.0, 1.0])
+        config.set_cell(0, 0, "start", 2.0, [0.0, 0.0, 0.0, 0.0, 1.0])
+        result = solve_optimal_policy(config, 3)
+        self.assertAlmostEqual(result.values[0][0], 5.42)
+        self.assertEqual(result.optimal_policy[0][0], [0.0, 0.0, 0.0, 0.0, 1.0])
+        self.assertEqual(result.best_paths, [])
+
+    def test_only_nonzero_input_actions_are_available(self) -> None:
+        config = GridConfig.create(rows=1, columns=2)
+        config.cells[0][0].probabilities = [0.0, 0.0, 0.0, 1e-8, 1 - 1e-8]
+        result = solve_optimal_policy(config, 1)
+        self.assertEqual(result.optimal_policy[0][0], [0.0, 0.0, 0.0, 1.0, 0.0])
+        self.assertEqual(result.values, [[1.0, 1.0]])
+        self.assertEqual(result.best_paths[0].coordinates, [(0, 0), (0, 1)])
+        self.assertEqual(result.best_paths[0].score, 1.0)
+
+    def test_negative_rewards_choose_the_greatest_value(self) -> None:
+        config = GridConfig.create(rows=1, columns=2, gamma=1.0)
+        config.set_cell(0, 0, "start", -2.0, [0.0, 0.0, 0.0, 0.5, 0.5])
+        config.set_cell(0, 1, "target", -1.0, [0.0, 0.0, 0.0, 0.0, 1.0])
+        result = solve_optimal_policy(config, 1000)
+        self.assertEqual(result.values, [[-1000.0, -1000.0]])
+        self.assertEqual(result.optimal_policy[0][0], [0.0, 0.0, 0.0, 1.0, 0.0])
+        self.assertEqual(result.best_paths[0].score, -1.0)
+
+    def test_invalid_horizons_are_rejected(self) -> None:
+        config = GridConfig.create(rows=1, columns=2)
+        for steps in (0, -1, 1001, True, False, 3.0, "3", None):
+            with self.subTest(steps=steps), self.assertRaises(ValueError):
+                solve_optimal_policy(config, steps)
 
 
 if __name__ == "__main__":

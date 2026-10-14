@@ -21,7 +21,7 @@ python3 -m pip install -r "src/requirements.txt"
 python3 -B "src/main.py"
 ```
 
-The Bellman policy-evaluation button computes finite-step state values using the selected step count. Optimal policy and path algorithms remain for users to implement. See the editor README for its model conventions and calculation contracts.
+Both Bellman buttons use the selected step count to compute state values. The optimal button also displays optimal actions and the highest-scoring simple target paths allowed by the final policy. See the editor README for its model conventions and calculation contracts.
 
 ## Python Version
 

@@ -1,10 +1,11 @@
 import json
 import tempfile
 import unittest
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
-from PySide6.QtCore import QPoint, QPointF, Qt
+from PySide6.QtCore import QPoint, QPointF, Qt, QTimer
 from PySide6.QtGui import QWheelEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
@@ -58,6 +59,114 @@ class WindowTest(unittest.TestCase):
         self.assertEqual(self.window.config.target, (1, 2))
         self.assertEqual(self.window.config.cells[1][1].reward, 0.0)
 
+    def test_random_forbidden_button_refreshes_selected_cell_and_clears_results(self) -> None:
+        self.window.config.set_cell(1, 1, "forbidden", -8.0, [0.2] * 5)
+        self.window.config.set_cell(1, 2, "normal", 7.0, [0.0, 0.0, 0.0, 1.0, 0.0])
+        self.window._select_cell(1, 1)
+        self.window.optimize_button.click()
+        before = deepcopy(self.window.config)
+        self.assertEqual(self.window.forbidden_count_box.maximum(), 23)
+        self.window.forbidden_count_box.setValue(2)
+        self.assertFalse(self.window._grid_pending())
+        with patch("model.random.sample", return_value=[(1, 2), (2, 2)]):
+            self.window.randomize_forbidden_button.click()
+        self.assertEqual(self.window.selected, (1, 1))
+        self.assertEqual(self.window.kind_box.currentData(), "normal")
+        self.assertEqual(float(self.window.reward_edit.text()), 0.0)
+        self.assertFalse(self.window._cell_pending())
+        self.assertEqual(self.window.config.cells[1][2].reward, -1.0)
+        self.assertEqual(sum(cell.kind == "forbidden" for row in self.window.config.cells for cell in row), 2)
+        for i, row in enumerate(self.window.config.cells):
+            for j, cell in enumerate(row):
+                self.assertEqual(cell.probabilities, before.cells[i][j].probabilities)
+        self.assertEqual(self.window.config.start, before.start)
+        self.assertEqual(self.window.config.target, before.target)
+        self.assertIsNone(self.window.result)
+        self.assertEqual(self.window.board_view.board_item.path_edges, set())
+        self.assertEqual(self.window.policy_mode.currentIndex(), 0)
+        self.assertFalse(self.window.show_paths_box.isEnabled())
+        self.assertTrue(self.window.dirty)
+        self.window.forbidden_count_box.setValue(0)
+        self.window.randomize_forbidden_button.click()
+        self.assertFalse(any(cell.kind == "forbidden" for row in self.window.config.cells for cell in row))
+        self.assertEqual(self.window.config.cells[1][2].reward, 0.0)
+
+    def test_random_forbidden_handles_pending_edit_choices(self) -> None:
+        self.window.forbidden_count_box.setValue(1)
+        for choice in ("取消", "放弃修改", "应用"):
+            with self.subTest(choice=choice):
+                self.window.evaluate_button.click()
+                before = deepcopy(self.window.config)
+                previous_result = self.window.result
+                previous_dirty = self.window.dirty
+                draft_reward = before.cells[0][0].reward + 2
+                self.window.reward_edit.setText(str(draft_reward))
+                choices = []
+
+                def choose_edit_action():
+                    dialog = self.app.activeModalWidget()
+                    for button in dialog.buttons():
+                        if button.text() == choice:
+                            choices.append(choice)
+                            button.click()
+                            return
+                    dialog.reject()
+
+                QTimer.singleShot(0, choose_edit_action)
+                with patch("model.random.sample", return_value=[(1, 1)]) as sample:
+                    self.window.randomize_forbidden_button.click()
+                self.assertEqual(choices, [choice])
+                if choice == "取消":
+                    sample.assert_not_called()
+                    self.assertEqual(self.window.config, before)
+                    self.assertIs(self.window.result, previous_result)
+                    self.assertEqual(self.window.dirty, previous_dirty)
+                    self.assertTrue(self.window._cell_pending())
+                    self.assertEqual(float(self.window.reward_edit.text()), draft_reward)
+                    self.window._load_cell_editor()
+                else:
+                    sample.assert_called_once()
+                    expected_reward = draft_reward if choice == "应用" else before.cells[0][0].reward
+                    self.assertEqual(self.window.config.cells[0][0].reward, expected_reward)
+                    self.assertEqual(self.window.config.cells[1][1].kind, "forbidden")
+                    self.assertFalse(self.window._cell_pending())
+                    self.assertIsNone(self.window.result)
+
+    def test_random_forbidden_waits_for_global_settings(self) -> None:
+        before = deepcopy(self.window.config)
+        self.window.columns_box.setValue(3)
+        self.window.forbidden_count_box.setValue(2)
+        with patch.object(self.window, "_message") as message, patch("model.random.sample") as sample:
+            self.window.randomize_forbidden_button.click()
+        message.assert_called_once()
+        sample.assert_not_called()
+        self.assertEqual(self.window.config, before)
+        self.assertEqual(self.window.columns_box.value(), 3)
+
+    def test_random_forbidden_layout_round_trips_and_range_updates(self) -> None:
+        self.window.forbidden_count_box.setValue(5)
+        self.window.randomize_forbidden_button.click()
+        expected = deepcopy(self.window.config)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "random-grid.json"
+            with patch("window.QFileDialog.getSaveFileName", return_value=(str(path), "")):
+                self.assertTrue(self.window._save_dialog())
+            self.window.forbidden_count_box.setValue(0)
+            self.window.randomize_forbidden_button.click()
+            with patch("window.QFileDialog.getOpenFileName", return_value=(str(path), "")), patch.object(self.window, "_confirm_unsaved", return_value=True):
+                self.assertTrue(self.window._load_dialog())
+            self.assertEqual(self.window.config, expected)
+            self.assertEqual(self.window.forbidden_count_box.value(), 5)
+            self.assertFalse(self.window.dirty)
+        self.window.rows_box.setValue(1)
+        self.window.columns_box.setValue(2)
+        with patch.object(self.window, "_confirm", return_value=True):
+            self.assertTrue(self.window._apply_grid())
+        self.assertEqual(self.window.forbidden_count_box.maximum(), 0)
+        self.assertEqual(self.window.forbidden_count_box.value(), 0)
+        self.assertTrue(self.window._randomize_forbidden())
+        self.window.config.validate()
+
     def test_result_enables_optimal_policy_and_draws_all_unique_edges(self) -> None:
         values = [[0.0] * 5 for _ in range(5)]
         policy = [[[0.2] * 5 for _ in range(5)] for _ in range(5)]
@@ -96,6 +205,50 @@ class WindowTest(unittest.TestCase):
         message.assert_not_called()
         self.assertAlmostEqual(self.window.result.values[4][4], 10.0)
         self.assertIn("1000 步", self.window.result_label.text())
+
+    def test_optimal_button_displays_real_policy_values_and_all_tied_paths(self) -> None:
+        self.window.max_count_box.setValue(100)
+        with patch.object(self.window, "_message") as message:
+            self.window.optimize_button.click()
+        self.app.processEvents()
+        message.assert_not_called()
+        self.assertEqual(self.window.policy_mode.currentIndex(), 1)
+        self.assertTrue(self.window.policy_mode.model().item(1).isEnabled())
+        self.assertIn("100 步", self.window.result_label.text())
+        self.assertIn("起点状态价值 V：4.782", self.window.start_value_label.text())
+        self.assertEqual(self.window.result.optimal_policy[0][0], [0.0, 0.5, 0.0, 0.5, 0.0])
+        self.assertEqual(len(self.window.result.best_paths), 70)
+        self.assertEqual(len(self.window.board_view.board_item.path_edges), 40)
+        self.assertIn("70 条", self.window.paths_label.text())
+        self.assertIn("到达目标前回报：0.4782969", self.window.paths_label.text())
+        self.assertTrue(self.window.show_paths_box.isEnabled())
+        self.assertTrue(self.window.board_view.board_item.paths_visible)
+        self.assertEqual(self.window.board_view.board_item.probabilities(0, 0), [0.0, 0.5, 0.0, 0.5, 0.0])
+
+        self.window.policy_mode.setCurrentIndex(0)
+        self.assertEqual(self.window.board_view.board_item.probabilities(0, 0), [0.2] * 5)
+        self.window.policy_mode.setCurrentIndex(1)
+        self.window.show_paths_box.setChecked(False)
+        self.assertFalse(self.window.board_view.board_item.paths_visible)
+        self.window.show_paths_box.setChecked(True)
+        self.window._select_cell(4, 4)
+        self.assertIn("9.999", self.window.value_label.text())
+
+        self.window.max_count_box.setValue(3)
+        self.assertIsNone(self.window.result)
+        self.assertEqual(self.window.start_value_label.text(), "起点状态价值 V：尚未计算")
+
+    def test_optimal_button_without_goal_path_keeps_the_policy_visible(self) -> None:
+        self.window.max_count_box.setValue(3)
+        with patch.object(self.window, "_message") as message:
+            self.window.optimize_button.click()
+        message.assert_not_called()
+        self.assertIsNotNone(self.window.result)
+        self.assertEqual(self.window.result.best_paths, [])
+        self.assertEqual(self.window.policy_mode.currentIndex(), 1)
+        self.assertIn("没有可展示的目标路径", self.window.paths_label.text())
+        self.assertFalse(self.window.show_paths_box.isEnabled())
+        self.assertEqual(self.window.board_view.board_item.path_edges, set())
 
     def test_both_calculation_buttons_pass_the_selected_horizon(self) -> None:
         values = [[0.0] * 5 for _ in range(5)]

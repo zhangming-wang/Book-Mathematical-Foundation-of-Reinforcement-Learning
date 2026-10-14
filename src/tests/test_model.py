@@ -6,7 +6,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from bellman import solve_optimal_policy
 from model import (
     ACTIONS,
     CalculationResult,
@@ -262,6 +261,70 @@ class ModelTest(unittest.TestCase):
         cell_policy[3] = 1.0
         self.assertEqual(config.cells[0][1].probabilities, [0.0, 0.0, 1.0, 0.0, 0.0])
 
+    def test_random_forbidden_replaces_old_cells_and_preserves_roles_and_policies(self) -> None:
+        config = GridConfig.create(rows=2, columns=4)
+        config.set_cell(1, 1, "start", 3.0, [0.2] * 5)
+        config.set_cell(0, 1, "target", 4.0, [0.2] * 5)
+        config.set_cell(0, 0, "forbidden", -9.0, [0.2] * 5)
+        config.set_cell(0, 2, "normal", 7.0, [0.2] * 5)
+        for i, row in enumerate(config.cells):
+            for j, cell in enumerate(row):
+                cell.probabilities = [0.0] * 5
+                cell.probabilities[(i * config.columns + j) % 5] = 1.0
+        before = copy.deepcopy(config)
+
+        positions = [(1, 0), (1, 3)]
+        with patch("model.random.sample", return_value=positions) as sample:
+            self.assertEqual(config.randomize_forbidden(2), positions)
+        candidates, count = sample.call_args.args
+        self.assertEqual(count, 2)
+        self.assertNotIn(config.start, candidates)
+        self.assertNotIn(config.target, candidates)
+        self.assertIn((0, 0), candidates)
+        self.assertEqual(config.cells[0][0].kind, "normal")
+        self.assertEqual(config.cells[0][0].reward, 0.0)
+        self.assertEqual(config.cells[0][2].reward, 7.0)
+        for i, row in enumerate(config.cells):
+            for j, cell in enumerate(row):
+                self.assertEqual(cell.probabilities, before.cells[i][j].probabilities)
+                self.assertEqual(cell.kind == "forbidden", (i, j) in positions)
+                if cell.kind == "forbidden":
+                    self.assertEqual(cell.reward, -1.0)
+        for i, j in (config.start, config.target):
+            self.assertEqual(config.cells[i][j], before.cells[i][j])
+        config.validate()
+
+    def test_random_forbidden_count_limits_and_clear(self) -> None:
+        for rows, columns in ((2, 3), (1, 5), (5, 1), (1, 2)):
+            config = GridConfig.create(rows=rows, columns=columns)
+            for count in (rows * columns - 2, 0, 1 if rows * columns > 2 else 0):
+                with self.subTest(rows=rows, columns=columns, count=count):
+                    positions = config.randomize_forbidden(count)
+                    self.assertEqual(len(set(positions)), count)
+                    self.assertEqual(sum(cell.kind == "forbidden" for row in config.cells for cell in row), count)
+                    self.assertNotIn(config.start, positions)
+                    self.assertNotIn(config.target, positions)
+                    for row in config.cells:
+                        for cell in row:
+                            self.assertEqual(cell.reward, {"normal": 0.0, "start": 0.0, "target": 1.0, "forbidden": -1.0}[cell.kind])
+                    config.validate()
+
+    def test_invalid_random_forbidden_requests_do_not_change_cells(self) -> None:
+        config = GridConfig.create(rows=2, columns=3)
+        config.set_cell(0, 1, "forbidden", -3.0, [0.2] * 5)
+        before = copy.deepcopy(config)
+        for count in (-1, 5, True, False, 2.0, "2", None):
+            with self.subTest(count=count):
+                with patch("model.random.sample") as sample:
+                    with self.assertRaises(ValueError):
+                        config.randomize_forbidden(count)
+                    sample.assert_not_called()
+                self.assertEqual(config, before)
+        with patch("model.random.sample", side_effect=ValueError("sampling failed")):
+            with self.assertRaises(ValueError):
+                config.randomize_forbidden(2)
+        self.assertEqual(config, before)
+
     def test_json_round_trip_and_action_keyed_probabilities(self) -> None:
         config = GridConfig.create(
             rows=2,
@@ -494,15 +557,6 @@ class ModelTest(unittest.TestCase):
         for paths in (None, (), [{}]):
             with self.subTest(paths=paths), self.assertRaises(ValueError):
                 CalculationResult(values, best_paths=paths).validate(config)
-
-    def test_optimal_policy_entry_point_remains_an_explicit_stub(self) -> None:
-        config = GridConfig.create(rows=2, columns=2)
-        before = copy.deepcopy(config)
-        with self.assertRaises(NotImplementedError) as raised:
-            solve_optimal_policy(config, 3)
-        self.assertTrue(str(raised.exception))
-        self.assertEqual(config, before)
-
 
 if __name__ == "__main__":
     unittest.main()
