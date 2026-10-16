@@ -485,6 +485,7 @@ class CalculationResult:
     values: list[list[float]]
     optimal_policy: list[list[list[float]]] | None = None
     best_paths: list[PathResult] = field(default_factory=list)
+    all_paths: list[PathResult] = field(default_factory=list)
 
     def validate(self, config: GridConfig) -> None:
         if not isinstance(config, GridConfig):
@@ -521,47 +522,49 @@ class CalculationResult:
                         f"optimal_policy[{row_index}][{column_index}]",
                     )
 
-        if not isinstance(self.best_paths, list):
-            raise ValueError("best_paths must be a list.")
         start, target = config.start, config.target
-        for path_index, path in enumerate(self.best_paths):
-            if not isinstance(path, PathResult):
-                raise ValueError(f"best_paths[{path_index}] must be a PathResult.")
-            if not _is_finite_number(path.score):
-                raise ValueError(f"best_paths[{path_index}].score must be finite.")
-            if not isinstance(path.coordinates, list) or not path.coordinates:
-                raise ValueError(
-                    f"best_paths[{path_index}].coordinates must be non-empty."
-                )
+        for field_name, paths in (("best_paths", self.best_paths), ("all_paths", self.all_paths)):
+            if not isinstance(paths, list):
+                raise ValueError(f"{field_name} must be a list.")
+            for path_index, path in enumerate(paths):
+                context = f"{field_name}[{path_index}]"
+                if not isinstance(path, PathResult):
+                    raise ValueError(f"{context} must be a PathResult.")
+                if not _is_finite_number(path.score):
+                    raise ValueError(f"{context}.score must be finite.")
+                if not isinstance(path.coordinates, list) or not path.coordinates:
+                    raise ValueError(
+                        f"{context}.coordinates must be non-empty."
+                    )
 
-            for coordinate_index, coordinate in enumerate(path.coordinates):
-                if not isinstance(coordinate, tuple) or len(coordinate) != 2:
+                for coordinate_index, coordinate in enumerate(path.coordinates):
+                    if not isinstance(coordinate, tuple) or len(coordinate) != 2:
+                        raise ValueError(
+                            f"{context}.coordinates"
+                            f"[{coordinate_index}] must be a coordinate tuple."
+                        )
+                    row, column = coordinate
+                    if not _is_integer(row) or not _is_integer(column):
+                        raise ValueError(
+                            f"{context}.coordinates"
+                            f"[{coordinate_index}] must contain integers."
+                        )
+                    if not (0 <= row < config.rows and 0 <= column < config.columns):
+                        raise ValueError(
+                            f"{context}.coordinates"
+                            f"[{coordinate_index}] is outside the grid."
+                        )
+                if path.coordinates[0] != start:
                     raise ValueError(
-                        f"best_paths[{path_index}].coordinates"
-                        f"[{coordinate_index}] must be a coordinate tuple."
+                        f"{context} must start at the start cell."
                     )
-                row, column = coordinate
-                if not _is_integer(row) or not _is_integer(column):
+                if path.coordinates[-1] != target:
                     raise ValueError(
-                        f"best_paths[{path_index}].coordinates"
-                        f"[{coordinate_index}] must contain integers."
+                        f"{context} must end at the target cell."
                     )
-                if not (0 <= row < config.rows and 0 <= column < config.columns):
-                    raise ValueError(
-                        f"best_paths[{path_index}].coordinates"
-                        f"[{coordinate_index}] is outside the grid."
-                    )
-            if path.coordinates[0] != start:
-                raise ValueError(
-                    f"best_paths[{path_index}] must start at the start cell."
-                )
-            if path.coordinates[-1] != target:
-                raise ValueError(
-                    f"best_paths[{path_index}] must end at the target cell."
-                )
-            for previous, current in zip(path.coordinates, path.coordinates[1:]):
-                delta = (current[0] - previous[0], current[1] - previous[1])
-                if delta not in ACTION_DELTAS.values():
-                    raise ValueError(
-                        f"best_paths[{path_index}] contains a non-adjacent move."
-                    )
+                for previous, current in zip(path.coordinates, path.coordinates[1:]):
+                    delta = (current[0] - previous[0], current[1] - previous[1])
+                    if delta not in ACTION_DELTAS.values():
+                        raise ValueError(
+                            f"{context} contains a non-adjacent move."
+                        )

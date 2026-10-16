@@ -53,6 +53,96 @@
         }
       },
       {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
         "kind": "normal",
         "reward": 0.0,
         "probabilities": {
@@ -99,6 +189,812 @@
       {
         "kind": "forbidden",
         "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      }
+    ],
+    [
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "forbidden",
+        "reward": -1.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
+        "probabilities": {
+          "up": 0.25,
+          "down": 0.25,
+          "left": 0.25,
+          "right": 0.25,
+          "stay": 0.0
+        }
+      },
+      {
+        "kind": "normal",
+        "reward": 0.0,
         "probabilities": {
           "up": 0.25,
           "down": 0.25,
@@ -187,74 +1083,6 @@
         }
       },
       {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
         "kind": "forbidden",
         "reward": -1.0,
         "probabilities": {
@@ -268,834 +1096,6 @@
       {
         "kind": "forbidden",
         "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      }
-    ],
-    [
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "forbidden",
-        "reward": -1.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
-        "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
-        }
-      },
-      {
-        "kind": "normal",
-        "reward": 0.0,
         "probabilities": {
           "up": 0.25,
           "down": 0.25,
@@ -1119,11 +1119,11 @@
         "kind": "target",
         "reward": 1.0,
         "probabilities": {
-          "up": 0.25,
-          "down": 0.25,
-          "left": 0.25,
-          "right": 0.25,
-          "stay": 0.0
+          "up": 0.0,
+          "down": 0.0,
+          "left": 0.0,
+          "right": 0.0,
+          "stay": 1.0
         }
       }
     ]

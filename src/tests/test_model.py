@@ -490,6 +490,9 @@ class ModelTest(unittest.TestCase):
         second = CalculationResult(values=result.values)
         first.best_paths.append(result.best_paths[0])
         self.assertEqual(second.best_paths, [])
+        first.all_paths.append(result.best_paths[0])
+        first.validate(config)
+        self.assertEqual(second.all_paths, [])
 
     def test_result_values_and_policy_validate_types_finiteness_and_shape(self) -> None:
         config = GridConfig.create(rows=2, columns=3)
@@ -557,6 +560,26 @@ class ModelTest(unittest.TestCase):
         for paths in (None, (), [{}]):
             with self.subTest(paths=paths), self.assertRaises(ValueError):
                 CalculationResult(values, best_paths=paths).validate(config)
+
+    def test_all_paths_validate_coordinates_scores_and_container_types(self) -> None:
+        config = GridConfig.create(rows=2, columns=2)
+        values = [[0.0] * 2 for _ in range(2)]
+        first = PathResult([(0, 0), (0, 1), (1, 1)], 1.0)
+        second = PathResult([(0, 0), (1, 0), (1, 1)], .5)
+        CalculationResult(values=values, best_paths=[first], all_paths=[first, second]).validate(config)
+        for paths in (
+            None, (), [{}],
+            [PathResult([], 1.0)],
+            [PathResult([(0, 0), (1, 1)], 1.0)],
+            [PathResult([(0, 0), (2, 0), (1, 1)], 1.0)],
+            [PathResult([(0, 1), (1, 1)], 1.0)],
+            [PathResult([(0, 0), (0, 1)], 1.0)],
+            [PathResult(first.coordinates, math.nan)],
+            [PathResult(first.coordinates, math.inf)],
+            [PathResult(first.coordinates, True)],
+        ):
+            with self.subTest(paths=paths), self.assertRaises(ValueError):
+                CalculationResult(values=values, all_paths=paths).validate(config)
 
 if __name__ == "__main__":
     unittest.main()

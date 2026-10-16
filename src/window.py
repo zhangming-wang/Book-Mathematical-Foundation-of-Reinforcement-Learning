@@ -4,7 +4,7 @@ import math
 from copy import deepcopy
 from pathlib import Path
 
-from PySide6.QtCore import QLocale, QPoint, QPointF, QRectF, Qt, Signal, Slot
+from PySide6.QtCore import QLocale, QPoint, QPointF, QRectF, Qt, QTimer, QSignalBlocker, Signal, Slot
 from PySide6.QtGui import QColor, QDoubleValidator, QFont, QFontMetricsF, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
@@ -13,10 +13,10 @@ from PySide6.QtWidgets import (
     QScrollArea, QSpinBox, QSplitter, QVBoxLayout, QWidget,
 )
 
-import bellman
+from calculation_worker import CalculationWorker
 from model import (
     ACTIONS, DEFAULT_REWARDS, KINDS, MAX_DIMENSION, PROBABILITY_TOLERANCE,
-    CalculationResult, CellConfig, GridConfig, load_config, save_config,
+    CalculationResult, CellConfig, GridConfig, PathResult, load_config, save_config,
 )
 
 
@@ -59,12 +59,14 @@ class BoardItem(QGraphicsItem):
 
     def set_result(self, result: CalculationResult | None) -> None:
         self.result = result
+        self.set_paths(result.best_paths if result is not None else [])
+
+    def set_paths(self, paths: list[PathResult]) -> None:
         self.path_edges.clear()
-        if result is not None:
-            for path in result.best_paths:
-                for first, second in zip(path.coordinates, path.coordinates[1:]):
-                    if first != second:
-                        self.path_edges.add(tuple(sorted((first, second))))
+        for path in paths:
+            for first, second in zip(path.coordinates, path.coordinates[1:]):
+                if first != second:
+                    self.path_edges.add(tuple(sorted((first, second))))
         self.update()
 
     def probabilities(self, row: int, column: int) -> list[float]:
@@ -393,6 +395,22 @@ class MainWindow(QMainWindow):
         self.file_path: Path | None = None
         self.dirty = False
         self.result: CalculationResult | None = None
+        self._calculation_worker: CalculationWorker | None = None
+        self._displayed_round = 0
+        self._calculation_total = 0
+        self._calculation_optimal = False
+        self._animated = False
+        self._paused = False
+        self._stopping = False
+        self._waiting_for_next = False
+        self._pending_frame = None
+        self._calculation_error = ""
+        self._reset_after_calculation = False
+        self._close_after_calculation = False
+        self._playback_timer = QTimer(self)
+        self._playback_timer.setSingleShot(True)
+        self._playback_timer.setTimerType(Qt.TimerType.PreciseTimer)
+        self._playback_timer.timeout.connect(self._request_next_round)
         self._loading = True
         self._cell_baseline = None
         self._grid_baseline = None
@@ -414,6 +432,7 @@ class MainWindow(QMainWindow):
         self._loading = False
         self._editor_changed()
         self._update_document_status()
+        QApplication.instance().aboutToQuit.connect(self.shutdown_calculation)
 
     def _build_ui(self) -> None:
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -502,6 +521,7 @@ class MainWindow(QMainWindow):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(12)
         grid_group = QGroupBox("棋盘设置")
+        self.grid_settings_group = grid_group
         grid_layout = QVBoxLayout(grid_group)
         form = QFormLayout()
         self.rows_box, self.columns_box = QSpinBox(), QSpinBox()
@@ -542,9 +562,6 @@ class MainWindow(QMainWindow):
 
         cell_group = QGroupBox("选中方块")
         cell_layout = QVBoxLayout(cell_group)
-        self.selection_label = QLabel()
-        self.selection_label.setStyleSheet("font-weight: 600; color: #203c53;")
-        cell_layout.addWidget(self.selection_label)
         cell_form = QFormLayout()
         self.kind_box = QComboBox()
         for kind in KINDS:
@@ -595,29 +612,75 @@ class MainWindow(QMainWindow):
         self.max_count_box.setRange(1, 1000)
         self.max_count_box.setValue(100)
         self.max_count_box.setKeyboardTracking(False)
-        self.max_count_box.setToolTip("计算未来这些步内的预期折扣总得分；不保存到棋盘配置。")
-        count_form.addRow("计算步数", self.max_count_box)
+        self.max_count_box.setToolTip("每轮更新整张棋盘；第 n 轮计算未来 n 步的价值，与路径搜索长度分开。")
+        count_form.addRow("计算轮数", self.max_count_box)
+        self.path_max_count_box = QSpinBox()
+        self.path_max_count_box.setRange(1, self.config.rows * self.config.columns - 1)
+        self.path_max_count_box.setValue(self.config.rows * self.config.columns - 1)
+        self.path_max_count_box.setKeyboardTracking(False)
+        self.path_max_count_box.setToolTip("每轮按该轮策略搜索最多这些步的目标路径，独立于计算轮数；不重复经过方块。")
+        count_form.addRow("路径最大步数", self.path_max_count_box)
+        self.calculation_mode_box = QComboBox()
+        self.calculation_mode_box.addItem("一次算完", False)
+        self.calculation_mode_box.addItem("逐轮播放", True)
+        self.calculation_mode_box.currentIndexChanged.connect(self._update_playback_controls)
+        count_form.addRow("计算方式", self.calculation_mode_box)
+        self.interval_box = double_box(0, 60, .5)
+        self.interval_box.setSingleStep(.1)
+        self.interval_box.setSuffix(" 秒")
+        self.interval_box.setToolTip("每轮结果显示后等待的时间，播放中可调整。")
+        self.interval_box.setEnabled(False)
+        self.interval_box.valueChanged.connect(self._interval_changed)
+        count_form.addRow("播放间隔", self.interval_box)
         result_layout.addLayout(count_form)
-        self.evaluate_button = QPushButton("计算贝尔曼方程")
-        self.optimize_button = QPushButton("计算贝尔曼最优方程")
+        calculation_buttons = QHBoxLayout()
+        self.evaluate_button = QPushButton("贝尔曼方程")
+        self.optimize_button = QPushButton("贝尔曼最优方程")
         self.evaluate_button.clicked.connect(lambda: self._calculate(False))
         self.optimize_button.clicked.connect(lambda: self._calculate(True))
-        result_layout.addWidget(self.evaluate_button)
-        result_layout.addWidget(self.optimize_button)
+        calculation_buttons.addWidget(self.evaluate_button, 1)
+        calculation_buttons.addWidget(self.optimize_button, 1)
+        result_layout.addLayout(calculation_buttons)
+        self.reset_board_button = QPushButton("重置棋盘")
+        self.reset_board_button.setToolTip("清除价值、最优策略和绿色路径，显示配置中的动作概率；计算中会先停止任务。")
+        self.reset_board_button.clicked.connect(self._reset_board)
+        playback_buttons = QHBoxLayout()
+        self.pause_button = QPushButton("暂停")
+        self.pause_button.setEnabled(False)
+        self.pause_button.clicked.connect(self._toggle_pause)
+        self.stop_button = QPushButton("停止")
+        self.stop_button.setEnabled(False)
+        self.stop_button.clicked.connect(self._stop_calculation)
+        playback_buttons.addWidget(self.pause_button, 1)
+        playback_buttons.addWidget(self.stop_button, 1)
+        playback_buttons.addWidget(self.reset_board_button, 1)
+        result_layout.addLayout(playback_buttons)
+        self.progress_label = QLabel("尚未开始")
+        result_layout.addWidget(self.progress_label)
         self.result_label = QLabel("尚未计算")
-        self.start_value_label = QLabel("起点状态价值 V：尚未计算")
         self.value_label = QLabel("选中格状态价值 V：尚未计算")
         self.paths_label = QLabel("最高得分路径：尚未计算")
         self.paths_label.setToolTip("在显示策略允许的、不重复经过方块的目标路径中比较得分；回报只累计到首次到达目标。")
-        for label in (self.result_label, self.start_value_label, self.value_label, self.paths_label):
+        for label in (self.result_label, self.value_label):
             label.setWordWrap(True)
             result_layout.addWidget(label)
+        path_form = QFormLayout()
+        self.path_selection_box = QComboBox()
+        self.path_selection_box.setEnabled(False)
+        self.path_selection_box.setMaxVisibleItems(12)
+        self.path_selection_box.setToolTip("默认显示全部并列最优路径；按得分从大到小列出每条路线，选择后单独显示。")
+        self.path_selection_box.currentIndexChanged.connect(self._change_path_selection)
+        path_form.addRow("路径选择", self.path_selection_box)
+        result_layout.addLayout(path_form)
+        self.paths_label.setWordWrap(True)
+        result_layout.addWidget(self.paths_label)
         self.show_paths_box = QCheckBox("显示绿色路径")
         self.show_paths_box.setChecked(True)
         self.show_paths_box.setEnabled(False)
         self.show_paths_box.toggled.connect(self._toggle_paths)
         result_layout.addWidget(self.show_paths_box)
         self.max_count_box.valueChanged.connect(lambda value: self._clear_result())
+        self.path_max_count_box.valueChanged.connect(self._path_limit_changed)
         content_layout.addWidget(result_group)
         content_layout.addStretch()
         scroll.setWidget(content)
@@ -652,6 +715,10 @@ class MainWindow(QMainWindow):
         self.zoom_box.setValue(self.config.zoom * 100)
         self.forbidden_count_box.setRange(0, self.config.rows * self.config.columns - 2)
         self.forbidden_count_box.setValue(sum(cell.kind == "forbidden" for row in self.config.cells for cell in row))
+        was_maximum = self.path_max_count_box.value() == self.path_max_count_box.maximum()
+        self.path_max_count_box.setMaximum(self.config.rows * self.config.columns - 1)
+        if was_maximum:
+            self.path_max_count_box.setValue(self.path_max_count_box.maximum())
         self._grid_baseline = self._grid_snapshot()
         self._loading = previous
 
@@ -666,7 +733,6 @@ class MainWindow(QMainWindow):
         for box, probability in zip(self.probability_boxes, cell.probabilities):
             box.setValue(probability)
         self._cell_baseline = self._cell_snapshot()
-        self.selection_label.setText(f"第 {row + 1} 行，第 {column + 1} 列 · {KIND_LABELS[cell.kind]}")
         self._loading = previous
         self._update_result_labels()
 
@@ -709,10 +775,11 @@ class MainWindow(QMainWindow):
         else:
             hint = "修改后点击“应用当前方块”。"
         self.cell_hint.setText(hint)
-        self.apply_cell_button.setEnabled(valid_cell and self._cell_pending())
-        self.bulk_policy_button.setEnabled(valid_probabilities)
+        idle = self._calculation_worker is None
+        self.apply_cell_button.setEnabled(idle and valid_cell and self._cell_pending())
+        self.bulk_policy_button.setEnabled(idle and valid_probabilities)
         self.grid_hint.setText("参数尚未应用；行列改变时将重建棋盘。" if self._grid_pending() else "改变宽高或 γ 会保留各格配置；改变行列会重建棋盘。")
-        self.apply_grid_button.setEnabled(self._grid_pending())
+        self.apply_grid_button.setEnabled(idle and self._grid_pending())
         self._update_document_status()
 
     def _kind_changed(self, *args) -> None:
@@ -752,6 +819,8 @@ class MainWindow(QMainWindow):
     def _apply_cell(self) -> bool:
         if not self._cell_pending():
             return True
+        if self._calculation_worker is not None:
+            return False
         try:
             kind, reward, probabilities = self._cell_values()
             self.config.set_cell(*self.selected, kind, reward, probabilities)
@@ -795,12 +864,16 @@ class MainWindow(QMainWindow):
         self._editor_changed()
 
     def _reset_cell_inputs(self) -> None:
+        if self._calculation_worker is not None:
+            return
         self.reward_edit.setText(format(DEFAULT_REWARDS[self.kind_box.currentData()], "g"))
         for box in self.probability_boxes:
             box.setValue(.2)
         self._editor_changed()
 
     def _apply_policy_to_all(self) -> None:
+        if self._calculation_worker is not None:
+            return
         probabilities = self._probability_values()
         if not self._confirm("统一动作概率", "将这五个概率应用到全部方块？每格已有的类型和得分将保留。", "应用到全部方块"):
             return
@@ -818,6 +891,8 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("五项概率已应用到全部方块。", 5000)
 
     def _randomize_forbidden(self) -> bool:
+        if self._calculation_worker is not None:
+            return False
         if self._grid_pending():
             self._message("棋盘参数尚未应用", "请先点击“应用棋盘设置”，再随机生成禁止格。")
             return False
@@ -840,6 +915,8 @@ class MainWindow(QMainWindow):
         return True
 
     def _apply_grid(self) -> bool:
+        if self._calculation_worker is not None:
+            return False
         values = self._grid_snapshot()
         old = (self.config.rows, self.config.columns, self.config.cell_width_mm, self.config.cell_height_mm, self.config.gamma)
         values = tuple(original if shown == baseline else shown for original, shown, baseline in zip(old, values, self._grid_baseline))
@@ -942,6 +1019,8 @@ class MainWindow(QMainWindow):
         return dialog.clickedButton() == discard
 
     def _load_dialog(self) -> bool:
+        if self._calculation_worker is not None:
+            return False
         path, _ = QFileDialog.getOpenFileName(self, "加载棋盘配置", str(self.file_path.parent) if self.file_path else "", "棋盘配置 (*.json)")
         if not path:
             return False
@@ -971,32 +1050,61 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"配置已加载：{self.file_path.name}", 7000)
         return True
 
+    def _reset_board(self) -> None:
+        if self._calculation_worker is not None:
+            self._reset_after_calculation = True
+            self._stop_calculation()
+            self.progress_label.setText("正在重置棋盘…")
+            return
+
+        self._reset_after_calculation = False
+        self._playback_timer.stop()
+        self._waiting_for_next = False
+        self._pending_frame = None
+        self._paused = False
+        self._stopping = False
+        self._calculation_error = ""
+        self._calculation_total = 0
+        self._clear_result()
+        self.result_label.setText("尚未计算")
+        self._set_calculation_controls()
+        self.statusBar().showMessage("已重置棋盘显示，可重新计算。", 5000)
+
     def _clear_result(self) -> None:
+        if self._calculation_worker is not None:
+            self._stop_calculation()
+        self._displayed_round = 0
         self.result = None
         self.board_view.board_item.set_result(None)
         self.policy_mode.setCurrentIndex(0)
         self.policy_mode.model().item(1).setEnabled(False)
+        with QSignalBlocker(self.path_selection_box):
+            self.path_selection_box.clear()
+        self.path_selection_box.setEnabled(False)
         self.show_paths_box.setEnabled(False)
+        self.progress_label.setText("尚未开始")
         self._update_result_labels()
+
+    def _path_limit_changed(self, *args) -> None:
+        if not self._loading:
+            self._clear_result()
 
     def _update_result_labels(self) -> None:
         if self.result is None:
             self.result_label.setText("公式尚未接入" if self.result_label.text() == "公式尚未接入" else "尚未计算")
-            self.start_value_label.setText("起点状态价值 V：尚未计算")
             self.value_label.setText("选中格状态价值 V：尚未计算")
             self.paths_label.setText("最高得分路径：尚未计算")
             return
         row, column = self.selected
-        start_row, start_column = self.config.start
-        self.start_value_label.setText(f"起点状态价值 V：{self.result.values[start_row][start_column]:.12g}")
         self.value_label.setText(f"选中格状态价值 V：{self.result.values[row][column]:.12g}")
         paths = self.result.best_paths
-        if not paths:
+        all_paths = self.result.all_paths or paths
+        if not all_paths:
             self.paths_label.setText("最高得分路径：当前策略下没有可展示的目标路径")
         else:
-            scores = [path.score for path in paths]
-            score_text = f"{min(scores):.9g}" if min(scores) == max(scores) else f"{min(scores):.9g} ～ {max(scores):.9g}"
-            self.paths_label.setText(f"最高得分路径：{len(paths)} 条\n到达目标前回报：{score_text}")
+            self.paths_label.setText(
+                f"最高得分路径：{len(paths)} 条  可选目标路径：{len(all_paths)} 条"
+            )
 
     def show_result(self, result: CalculationResult, optimal: bool = False) -> None:
         if not isinstance(result, CalculationResult):
@@ -1004,47 +1112,227 @@ class MainWindow(QMainWindow):
         result.validate(self.config)
         if optimal and result.optimal_policy is None:
             raise ValueError("最优方程接口需要返回 optimal_policy。")
+        previous_path = self.path_selection_box.currentData()
+        previous_coordinates = previous_path.coordinates if previous_path is not None else None
         self.result = deepcopy(result)
         self.board_view.board_item.set_result(self.result)
         available = result.optimal_policy is not None
         self.policy_mode.model().item(1).setEnabled(available)
         self.policy_mode.setCurrentIndex(1 if optimal else 0)
-        self.show_paths_box.setEnabled(bool(result.best_paths))
+        paths = sorted(self.result.all_paths or self.result.best_paths, key=lambda path: path.score, reverse=True)
+        with QSignalBlocker(self.path_selection_box):
+            self.path_selection_box.clear()
+            selected_index = 0
+            if paths:
+                self.path_selection_box.addItem("最优路径")
+                self.path_selection_box.setItemData(
+                    0, f"同时显示 {len(self.result.best_paths)} 条并列最高分路径", Qt.ItemDataRole.ToolTipRole,
+                )
+                for index, path in enumerate(paths, 1):
+                    self.path_selection_box.addItem(f"{path.score} - {len(path.coordinates) - 1} 步", path)
+                    coordinates = " → ".join(f"({i + 1}, {j + 1})" for i, j in path.coordinates)
+                    self.path_selection_box.setItemData(
+                        index, f"路径 {index} · {len(path.coordinates) - 1} 步\n{coordinates}",
+                        Qt.ItemDataRole.ToolTipRole,
+                    )
+                    if path.coordinates == previous_coordinates:
+                        selected_index = index
+                self.path_selection_box.setCurrentIndex(selected_index)
+        self.path_selection_box.setEnabled(bool(paths))
+        self.show_paths_box.setEnabled(bool(paths))
         self.result_label.setText("已返回最优策略与状态价值" if optimal else "已返回当前策略的状态价值")
-        self._update_result_labels()
+        self._change_path_selection(self.path_selection_box.currentIndex())
 
     def _calculate(self, optimal: bool) -> None:
+        if self._calculation_worker is not None:
+            return
         if self._grid_pending():
             self._message("棋盘参数尚未应用", "请先点击“应用棋盘设置”。")
             return
         if not self._apply_cell():
             return
         self._clear_result()
+        self._calculation_total = self.max_count_box.value()
+        self._calculation_optimal = optimal
+        self._animated = bool(self.calculation_mode_box.currentData())
+        self._paused = False
+        self._stopping = False
+        self._waiting_for_next = False
+        self._pending_frame = None
+        self._calculation_error = ""
+        self._reset_after_calculation = False
+        worker = CalculationWorker(
+            deepcopy(self.config), self._calculation_total, optimal, self._animated, self,
+            path_max_count=self.path_max_count_box.value(),
+        )
+        self._calculation_worker = worker
+        worker.frame_ready.connect(self._receive_calculation_frame)
+        worker.finished.connect(self._calculation_finished)
+        self.result_label.setText("正在计算最优价值与路径…" if optimal else "正在计算状态价值…")
+        self.progress_label.setText(f"第 0／{self._calculation_total} 轮")
+        self._set_calculation_controls()
+        worker.start()
+
+    def _set_calculation_controls(self) -> None:
+        running = self._calculation_worker is not None
+        self.grid_settings_group.setEnabled(not running)
+        for widget in (self.kind_box, self.reward_edit, self.reset_cell_button, *self.probability_boxes):
+            widget.setEnabled(not running)
+        for widget in (self.load_button, self.max_count_box, self.path_max_count_box, self.calculation_mode_box,
+                       self.evaluate_button, self.optimize_button):
+            widget.setEnabled(not running)
+        self.pause_button.setEnabled(running and not self._stopping)
+        self.pause_button.setText("继续" if self._paused else "暂停")
+        self.stop_button.setEnabled(running and not self._stopping)
+        self.reset_board_button.setEnabled(not self._stopping)
+        self._update_playback_controls()
+        self._editor_changed()
+
+    def _update_playback_controls(self, *args) -> None:
+        self.interval_box.setEnabled(bool(self.calculation_mode_box.currentData()) and not self._stopping)
+
+    def _interval_changed(self, *args) -> None:
+        if self._waiting_for_next and not self._paused and not self._stopping:
+            self._playback_timer.start(round(self.interval_box.value() * 1000))
+
+    @Slot(int, object)
+    def _receive_calculation_frame(self, count: int, result: CalculationResult) -> None:
+        if self.sender() is not self._calculation_worker or self._stopping:
+            return
+        if self._paused:
+            self._pending_frame = (count, result)
+            return
+        self._display_calculation_frame(count, result)
+
+    def _display_calculation_frame(self, count: int, result: CalculationResult) -> None:
+        worker = self._calculation_worker
+        if worker is None or self._stopping:
+            return
         try:
-            function = bellman.solve_optimal_policy if optimal else bellman.evaluate_policy
-            max_count = self.max_count_box.value()
-            result = function(deepcopy(self.config), max_count)
-            self.show_result(result, optimal)
-            if optimal:
-                self.result_label.setText(f"已计算未来 {max_count} 步的最优价值与策略")
-            else:
-                self.result_label.setText(f"已计算当前策略未来 {max_count} 步的状态价值")
-        except NotImplementedError:
-            self.result_label.setText("公式尚未接入")
-            self._message("公式尚未接入", "界面与输入配置已准备好。请在 bellman.py 中填写对应计算接口后再计算。")
+            previous_mode = self.policy_mode.currentIndex()
+            had_frame = self._displayed_round > 0
+            self.show_result(result, self._calculation_optimal)
+            if had_frame:
+                self.policy_mode.setCurrentIndex(previous_mode)
         except Exception as error:
-            self._message("计算失败", f"计算接口没有返回有效结果。\n{error}", True)
+            self._calculation_error = str(error)
+            self._stop_calculation()
+            return
+        self._displayed_round = count
+        self.progress_label.setText(f"第 {count}／{self._calculation_total} 轮")
+        if self._calculation_optimal:
+            self.result_label.setText(f"已计算未来 {count} 步的最优价值与策略")
+        else:
+            self.result_label.setText(f"已计算当前策略未来 {count} 步的状态价值")
+        worker.acknowledge_frame()
+        self._waiting_for_next = self._animated and count < self._calculation_total
+        if self._waiting_for_next:
+            self._playback_timer.start(round(self.interval_box.value() * 1000))
+
+    @Slot()
+    def _request_next_round(self) -> None:
+        if self._calculation_worker is None or self._paused or self._stopping or not self._waiting_for_next:
+            return
+        self._waiting_for_next = False
+        self._calculation_worker.request_next()
+
+    def _toggle_pause(self) -> None:
+        worker = self._calculation_worker
+        if worker is None or self._stopping:
+            return
+        self._paused = not self._paused
+        worker.set_paused(self._paused)
+        if self._paused:
+            self._playback_timer.stop()
+            self.progress_label.setText(f"已暂停，第 {self._displayed_round}／{self._calculation_total} 轮")
+        else:
+            self.progress_label.setText(f"第 {self._displayed_round}／{self._calculation_total} 轮")
+            if self._pending_frame is not None:
+                count, result = self._pending_frame
+                self._pending_frame = None
+                self._display_calculation_frame(count, result)
+            elif self._waiting_for_next:
+                self._playback_timer.start(round(self.interval_box.value() * 1000))
+        self._set_calculation_controls()
+
+    def _stop_calculation(self) -> None:
+        if self._calculation_worker is None:
+            return
+        self._stopping = True
+        self._playback_timer.stop()
+        self._waiting_for_next = False
+        self._pending_frame = None
+        self._calculation_worker.cancel()
+        self.progress_label.setText(f"正在停止，第 {self._displayed_round}／{self._calculation_total} 轮")
+        self._set_calculation_controls()
+
+    @Slot()
+    def _calculation_finished(self) -> None:
+        worker = self._calculation_worker
+        if worker is None or self.sender() is not worker:
+            return
+        worker.wait()
+        error = self._calculation_error or worker.error
+        stopped = self._stopping or worker.outcome == "stopped"
+        self._calculation_worker = None
+        self._playback_timer.stop()
+        self._waiting_for_next = False
+        self._pending_frame = None
+        self._paused = False
+        self._stopping = False
+        worker.deleteLater()
+        self._set_calculation_controls()
+        if self._reset_after_calculation:
+            self._reset_board()
+        elif error:
+            self.progress_label.setText(f"计算失败，第 {self._displayed_round}／{self._calculation_total} 轮")
+            self.result_label.setText(f"计算失败，保留第 {self._displayed_round} 轮结果" if self.result is not None else "计算失败，尚未生成结果")
+            if not self._close_after_calculation:
+                self._message("计算失败", f"{error}\n已保留最后显示的结果。", True)
+        elif stopped:
+            self.progress_label.setText(f"已停止，第 {self._displayed_round}／{self._calculation_total} 轮")
+            self.result_label.setText(f"已停止，保留第 {self._displayed_round} 轮结果" if self.result is not None else "已停止，尚未生成结果")
+        else:
+            self.progress_label.setText(f"已完成，第 {self._displayed_round}／{self._calculation_total} 轮")
+        if self._close_after_calculation:
+            QTimer.singleShot(0, self.close)
+
+    @Slot()
+    def shutdown_calculation(self) -> None:
+        """Join the worker before Qt tears down its objects, also on Ctrl+C."""
+        self._playback_timer.stop()
+        worker = self._calculation_worker
+        if worker is not None:
+            self._stopping = True
+            worker.cancel()
+            worker.wait()
+            self._calculation_worker = None
+            self._pending_frame = None
+            worker.deleteLater()
 
     def _change_policy_mode(self, index: int) -> None:
         self.board_view.board_item.use_optimal = index == 1
         self.board_view.board_item.update()
+
+    def _change_path_selection(self, index: int) -> None:
+        paths = []
+        if self.result is not None:
+            selected_path = self.path_selection_box.itemData(index)
+            paths = [selected_path] if selected_path is not None else self.result.best_paths
+        self.board_view.board_item.set_paths(paths)
+        self._update_result_labels()
 
     def _toggle_paths(self, visible: bool) -> None:
         self.board_view.board_item.paths_visible = visible
         self.board_view.board_item.update()
 
     def closeEvent(self, event) -> None:
-        if self._confirm_unsaved("关闭窗口"):
-            event.accept()
-        else:
+        if not self._close_after_calculation and not self._confirm_unsaved("关闭窗口"):
             event.ignore()
+            return
+        if self._calculation_worker is not None:
+            self._close_after_calculation = True
+            self._stop_calculation()
+            event.ignore()
+            return
+        event.accept()
